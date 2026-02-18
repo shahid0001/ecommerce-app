@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import ProductCard from './ProductCard.jsx'
+import ProductCard from './productCard'
 import SearchBar from '../../components/SearchBar'
 import { 
   fetchProductsAsync, 
