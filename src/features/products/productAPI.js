@@ -4,7 +4,7 @@ const PRODUCTS_PER_PAGE = 20;
 export const fetchProducts = async () => {
   try {
     // Fetch products from DummyJSON API
-    const response = await fetch('https://dummyjson.com/products?limit=0');
+    const response = await fetch('https://dummyjson.com/products?limit=100');
     if (!response.ok) {
       throw new Error('Failed to fetch products');
     }
