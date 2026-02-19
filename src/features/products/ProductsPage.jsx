@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import ProductCard from './productCard'
+import ProductCard from './ProductCard'
 import SearchBar from '../../components/SearchBar'
 import CategorySidebar from '../../components/CategorySidebar'
 import { 
