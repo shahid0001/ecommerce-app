@@ -1,27 +1,15 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { fetchProducts, searchProducts } from './productAPI'
-//import { fetchProducts,searchProducts } from './productApi'
-// Initial state for products
-const initialState = {
-  items: [], // Array to store all products
-  filteredItems: [], // Array to store filtered/search results
-  status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-  error: null,
-  searchQuery: '', // Current search query
-}
+import { fetchProducts, searchProducts, fetchCategories } from './productAPI'
 
-// Async thunk for fetching products
+// Async thunks
 export const fetchProductsAsync = createAsyncThunk(
   'products/fetchProducts',
   async () => {
-    // This function is called automatically by createAsyncThunk
-    // It returns a promise, and Redux Toolkit handles the lifecycle
     const products = await fetchProducts()
-    return products // This becomes the payload of the fulfilled action
+    return products
   }
 )
 
-// Async thunk for searching products
 export const searchProductsAsync = createAsyncThunk(
   'products/searchProducts',
   async (query) => {
@@ -30,51 +18,100 @@ export const searchProductsAsync = createAsyncThunk(
   }
 )
 
-// Create the slice
+// THIS IS THE MISSING EXPORT - make sure this exists!
+export const fetchCategoriesAsync = createAsyncThunk(
+  'products/fetchCategories',
+  async () => {
+    const categories = await fetchCategories()
+    return categories
+  }
+)
+
+const initialState = {
+  items: [],
+  filteredItems: [],
+  categories: [],
+  selectedCategory: '',
+  status: 'idle',
+  error: null,
+  searchQuery: '',
+}
+
 const productsSlice = createSlice({
   name: 'products',
   initialState,
   reducers: {
-    // Regular reducers for synchronous actions
     clearSearch: (state) => {
       state.searchQuery = ''
       state.filteredItems = []
     },
+    setSelectedCategory: (state, action) => {
+      state.selectedCategory = action.payload
+      // Reset search when category changes
+      state.searchQuery = ''
+      state.filteredItems = []
+    },
   },
-  // Extra reducers for handling async actions
   extraReducers: (builder) => {
     builder
-      // Handle fetchProductsAsync states
+      // Fetch products cases
       .addCase(fetchProductsAsync.pending, (state) => {
         state.status = 'loading'
       })
       .addCase(fetchProductsAsync.fulfilled, (state, action) => {
         state.status = 'succeeded'
-        state.items = action.payload // Store all products
+        state.items = action.payload
       })
       .addCase(fetchProductsAsync.rejected, (state, action) => {
         state.status = 'failed'
         state.error = action.error.message
       })
-      // Handle searchProductsAsync states
+      
+      // Search products cases
+      .addCase(searchProductsAsync.pending, (state) => {
+        state.status = 'loading'
+      })
       .addCase(searchProductsAsync.fulfilled, (state, action) => {
         state.status = 'succeeded'
         state.filteredItems = action.payload.products
         state.searchQuery = action.payload.query
       })
+      .addCase(searchProductsAsync.rejected, (state, action) => {
+        state.status = 'failed'
+        state.error = action.error.message
+      })
+      
+      // Fetch categories cases - THIS WAS MISSING!
+      .addCase(fetchCategoriesAsync.fulfilled, (state, action) => {
+        state.categories = action.payload
+      })
   },
 })
 
 // Export actions
-export const { clearSearch } = productsSlice.actions
+export const { clearSearch, setSelectedCategory } = productsSlice.actions
 
-// Selectors - functions to get specific data from state
+// Selectors
 export const selectAllProducts = (state) => state.products.items
-export const selectFilteredProducts = (state) => 
-  state.products.filteredItems.length > 0 ? state.products.filteredItems : state.products.items
+export const selectDisplayProducts = (state) => {
+  const { filteredItems, searchQuery, selectedCategory, items } = state.products
+  
+  // If searching, show search results
+  if (searchQuery) return filteredItems
+  
+  // If category selected, filter by category
+  if (selectedCategory) {
+    return items.filter(product => product.category === selectedCategory)
+  }
+  
+  // Otherwise show all products
+  return items
+}
 export const selectProductsStatus = (state) => state.products.status
 export const selectProductsError = (state) => state.products.error
 export const selectSearchQuery = (state) => state.products.searchQuery
+export const selectCategories = (state) => state.products.categories
+export const selectSelectedCategory = (state) => state.products.selectedCategory
 
 // Export reducer
 export default productsSlice.reducer
