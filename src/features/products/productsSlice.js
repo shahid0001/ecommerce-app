@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { fetchProducts, searchProducts } from './productAPI'
-
+//import { fetchProducts, searchProducts } from './productAPI'
+import { fetchProducts,searchProducts } from './productApi'
 // Initial state for products
 const initialState = {
   items: [], // Array to store all products
